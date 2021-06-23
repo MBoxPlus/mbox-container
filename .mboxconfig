@@ -1,0 +1,16 @@
+{
+  "cocoapods": {
+    "podfile": "Native/Podfile.rb",
+    "podspec": "Native/MBoxContainer.podspec",
+    "xcodeproj": "Native/MBoxContainer.xcodeproj"
+  },
+  "plugins2": [
+
+  ],
+  "podfile": "Native/Podfile.rb",
+  "podspec": "Native/MBoxContainer.podspec",
+  "xcodeproj": "Native/MBoxContainer.xcodeproj",
+  "gem": {
+    "gemspec": "Ruby/mbox-container.gemspec"
+  }
+}

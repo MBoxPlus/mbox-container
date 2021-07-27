@@ -1,0 +1,15 @@
+{
+  "id": "container",
+  "title": "Container",
+  "type": "object",
+  "properties": {
+    "allow_multiple_containers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Allow Multiple Containers",
+      "description": "Add the dependency manager tool to allow multiple containers."
+    }
+  }
+}

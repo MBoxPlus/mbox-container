@@ -22,9 +22,10 @@ extension MBCommander.Container {
         dynamic
         open override func switchContainer(_ container: MBContainer) throws {
             try super.switchContainer(container)
-            let currentFeature = self.config.currentFeature
-            UI.log(info: "Use container `\(container.name)` for \(container.tool)")
-            currentFeature.activateContainer(container)
+            UI.log(info: "Use container `\(container.name)` for \(container.tool)") {
+                let currentFeature = self.config.currentFeature
+                currentFeature.activateContainer(container)
+            }
             self.config.save()
         }
     }

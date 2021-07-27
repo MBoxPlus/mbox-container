@@ -45,7 +45,7 @@ public class MBContainer: MBCodableObject {
     dynamic
     public func description(feature: MBConfig.Feature) -> Row {
         let row = Row()
-        if feature.isCurrentContainer(name: name) {
+        if feature.isCurrentContainer(name: name, for: tool) {
             row.selected = true
             row.columns << name.ANSI(.yellow)
             row.columns << tool.description.ANSI(.yellow)

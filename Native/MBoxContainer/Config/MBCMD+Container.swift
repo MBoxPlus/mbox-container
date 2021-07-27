@@ -12,7 +12,7 @@ import MBoxDependencyManager
 
 extension MBCMD {
     @_dynamicReplacement(for: setupEnvironment(_:))
-    open func container_workspace_setupEnvironment(_ base: [String: String]? = nil) -> [String: String] {
+    open func container_setupEnvironment(_ base: [String: String]? = nil) -> [String: String] {
         let env = self.setupEnvironment(base)
 
         // inject different envs for different platform

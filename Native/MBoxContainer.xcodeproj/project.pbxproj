@@ -30,6 +30,8 @@
 		ABD0F51826526F190061D798 /* MBConfig.Repo+Container.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD0F51726526F190061D798 /* MBConfig.Repo+Container.swift */; };
 		ABDA214D25C024A60012029A /* Switch.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDA214C25C024A60012029A /* Switch.swift */; };
 		ABE080E824FF429900CC8E4B /* MBFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE080E724FF429900CC8E4B /* MBFeature.swift */; };
+		ABEE60E9267F496A0011CBBE /* MBSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE60E8267F496A0011CBBE /* MBSetting.swift */; };
+		ABEE60F826806DD70011CBBE /* MBCommander.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE60F726806DD70011CBBE /* MBCommander.swift */; };
 		DEE3106F552B5BE876099D91 /* Pods_MBoxContainer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AAB41A1D80AFCE151E7C816B /* Pods_MBoxContainer.framework */; };
 /* End PBXBuildFile section */
 
@@ -78,6 +80,8 @@
 		ABD0F51726526F190061D798 /* MBConfig.Repo+Container.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MBConfig.Repo+Container.swift"; sourceTree = "<group>"; };
 		ABDA214C25C024A60012029A /* Switch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Switch.swift; sourceTree = "<group>"; };
 		ABE080E724FF429900CC8E4B /* MBFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MBFeature.swift; sourceTree = "<group>"; };
+		ABEE60E8267F496A0011CBBE /* MBSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MBSetting.swift; sourceTree = "<group>"; };
+		ABEE60F726806DD70011CBBE /* MBCommander.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MBCommander.swift; sourceTree = "<group>"; };
 		E30E8520C6ED58C4EEB70F67 /* Pods-MBoxContainer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MBoxContainer.debug.xcconfig"; path = "Target Support Files/Pods-MBoxContainer/Pods-MBoxContainer.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -141,6 +145,7 @@
 				ABD0F51726526F190061D798 /* MBConfig.Repo+Container.swift */,
 				5928D228258A39E10070F1A7 /* MBCMD+Container.swift */,
 				252C8F642664C8A6003EA75C /* MBCommander+Container.swift */,
+				ABEE60E8267F496A0011CBBE /* MBSetting.swift */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -174,6 +179,7 @@
 				2504712924DBBDC60030B04E /* Container */,
 				2504712A24DBBDC60030B04E /* Container.swift */,
 				5927C47124DC0F310015EE1E /* Status.swift */,
+				ABEE60F726806DD70011CBBE /* MBCommander.swift */,
 			);
 			path = CLI;
 			sourceTree = "<group>";
@@ -442,6 +448,8 @@
 				ABDA214D25C024A60012029A /* Switch.swift in Sources */,
 				252C8F652664C8A6003EA75C /* MBCommander+Container.swift in Sources */,
 				5927C47224DC0F310015EE1E /* Status.swift in Sources */,
+				ABEE60F826806DD70011CBBE /* MBCommander.swift in Sources */,
+				ABEE60E9267F496A0011CBBE /* MBSetting.swift in Sources */,
 				5927C48B24E17F800015EE1E /* MBWorkRepo+Container.swift in Sources */,
 				ABE080E824FF429900CC8E4B /* MBFeature.swift in Sources */,
 				5927C47024DC0F260015EE1E /* List.swift in Sources */,

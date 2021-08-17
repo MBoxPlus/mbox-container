@@ -22,7 +22,7 @@ module MBox
       end
 
       def current_container_repos_for(tool)
-        container_names = if env = ENV["MBOX_#{tool.upcase}_CONTAINER_REPOS"]
+        container_names = if env = ENV["MBOX_#{tool.upcase}_CURRENT_CONTAINER_REPOS"]
           JSON.parse(env)
         else
           self.current_containers_for(tool).map(&:repo_name)

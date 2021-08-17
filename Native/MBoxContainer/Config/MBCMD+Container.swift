@@ -32,7 +32,8 @@ extension MBCMD {
         let activatedContainerRepos = Dictionary(grouping: currentFeature.currentContainers) { $0.tool }
         for (tool, containers) in activatedContainerRepos {
             let tool = tool.description.uppercased()
-            containerEnvs["MBOX_\(tool)_CURRENT_CONTAINERS"] = containers.map(\.repoName).withoutDuplicates().toJSONString(pretty: false)!
+            containerEnvs["MBOX_\(tool)_CURRENT_CONTAINERS"] = containers.map(\.name).withoutDuplicates().toJSONString(pretty: false)!
+            containerEnvs["MBOX_\(tool)_CURRENT_CONTAINER_REPOS"] = containers.map(\.repoName).withoutDuplicates().toJSONString(pretty: false)!
             containerEnvs["MBOX_\(tool)_CURRENT_CONTAINERS_PATHS"] = containers.compactMap { $0.repo?.workingPath }.withoutDuplicates().toJSONString(pretty: false)!
         }
         return env.merging(containerEnvs, uniquingKeysWith: { $1 })

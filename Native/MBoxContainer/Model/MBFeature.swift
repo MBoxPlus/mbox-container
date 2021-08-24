@@ -14,7 +14,7 @@ extension MBConfig.Feature {
     @_dynamicReplacement(for: plugins(for:))
     public func container_plugins(for repo: MBConfig.Repo) -> [String: MBSetting.PluginDescriptor] {
         let plugins = self.plugins(for: repo)
-        if self.currentContainers.isEmpty || self.currentContainerRepos.contains(repo) {
+        if !self.activatedContainerRepos.contains(repo) {
             return plugins
         }
         return plugins.filter { (name, plugin) -> Bool in

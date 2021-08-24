@@ -38,8 +38,8 @@ extension MBCommander.Container {
             }
 
             MBDependencyTool.allTools.forEach { (platformTool) in
-                let currentContainers = currentFeature.currentContainers(for: platformTool)
-                if currentContainers.count > 1 {
+                let activatedContainers = currentFeature.activatedContainers(for: platformTool)
+                if activatedContainers.count > 1 {
                     UI.log(warn: "Platform `\(platformTool)` have multiple containers", summary: false)
                 }
             }

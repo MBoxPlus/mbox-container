@@ -50,9 +50,18 @@ extension MBCommander.Container {
             let currentFeature = self.config.currentFeature
 
             // check whether `name` is container repo
-            let container = currentFeature.container(named: name)
-            if container == nil {
-                throw UserError("`\(name)` is NOT a container")
+            if let tools = self.tools {
+                for tool in tools{
+                    let container = currentFeature.container(named: name, tool: tool)
+                    if container == nil {
+                        throw UserError("`\(name)` is NOT a \(tool) container")
+                    }
+                }
+            } else {
+                let container = currentFeature.container(named: name)
+                if container.isEmpty {
+                    throw UserError("`\(name)` is NOT a container")
+                }
             }
 
             try super.validate()
@@ -88,6 +97,7 @@ extension MBCommander.Container {
 //                    UI.log(warn: "Platform `\(platformTool)` have multiple containers", summary: false)
 //                }
             }
+            self.config.save()
         }
 
         dynamic

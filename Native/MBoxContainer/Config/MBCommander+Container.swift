@@ -12,7 +12,7 @@ extension MBCommander {
     @_dynamicReplacement(for:setupEventParams())
     open func container_setupEventParams() -> [String: Any] {
         var eventParams = self.setupEventParams()
-        if let containers = UI.workspace?.config.currentFeature.currentContainers {
+        if let containers = UI.workspace?.config.currentFeature.activatedContainers {
             eventParams["current_containers"] = containers.compactMap { container in
                 return container.toCodableObject()
             }

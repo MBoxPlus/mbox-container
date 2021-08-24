@@ -32,6 +32,12 @@ extension MBConfig.Feature {
         }
     }
 
+    public func currentContainer(name: String, for tool: MBDependencyTool) -> MBContainer? {
+        return currentContainers.first {
+            $0.tool == tool && $0.isName(name)
+        }
+    }
+
     public func currentContainer(named: String) -> MBContainer? {
         return self.currentContainers.first { $0.isName(named) }
     }
@@ -72,6 +78,10 @@ extension MBConfig.Feature {
         return self.containers(for: tool).first
     }
 
+    public func container(named: String) -> [MBContainer] {
+        return self.allContainers.filter { $0.isName(named) }
+    }
+
     public func container(named: String, tool: MBDependencyTool? = nil) -> MBContainer? {
         let all: [MBContainer]
         if let tool = tool {
@@ -93,14 +103,51 @@ extension MBConfig.Feature {
         }
     }
 
+    dynamic
+    public func description(for containers: [MBContainer]) -> Row {
+        let row = Row()
+        var toolString = [String]()
+        for container in containers {
+            if self.isActivatedContainer(container) {
+                row.selected = true
+                toolString.append(container.tool.name.ANSI(.yellow))
+            } else {
+                toolString.append(container.tool.name)
+            }
+        }
+        var name = containers.first!.name
+        if row.selected {
+            name = name.ANSI(.yellow)
+        }
+        row.columns = [name, toolString.joined(separator: " + ")]
+        return row
+    }
+
     public var allContainerDescriptions: [Row] {
         let containers = self.allContainers
         guard !containers.isEmpty else {
             return [Row(column: "It is empty!")]
         }
         var list = [Row]()
-        containers.forEach { container in
-            list.append(container.description(feature: self))
+        let syncTools = Self.syncContainerToolsMap.values
+
+        for repo in self.repos {
+            var containers = Dictionary(uniqueKeysWithValues: repo.containers.map { ($0.tool, $0) })
+            for tools in syncTools {
+                var syncContainers = [MBContainer]()
+                for tool in tools.sorted() {
+                    if let container = containers.removeValue(forKey: tool) {
+                        syncContainers.append(container)
+                    }
+                }
+                if syncContainers.isEmpty {
+                    continue
+                }
+                list.append(description(for: syncContainers))
+            }
+            for container in containers.values {
+                list.append(description(for: [container]))
+            }
         }
 
         list.sort(by: { (a, b) -> Bool in
@@ -111,7 +158,7 @@ extension MBConfig.Feature {
 
     // MARK: - Activated Container
     public var activatedContainers: [MBContainer] {
-        let containers = currentContainers
+        let containers = MBDependencyTool.allTools.flatMap { self.activatedContainers(for: $0) }.withoutDuplicates()
         if !containers.isEmpty {
             return containers
         }
@@ -123,11 +170,37 @@ extension MBConfig.Feature {
     }
 
     public func activatedContainers(for tool: MBDependencyTool) -> [MBContainer] {
-        let containers = currentContainers(for: tool)
-        if !containers.isEmpty {
-            return containers
+        for t in Self.syncContainerToolsMap[tool] ?? [tool] {
+            var containers = currentContainers(for: t)
+            if containers.isEmpty { continue }
+            if tool == t {
+                return containers
+            }
+            containers = containers.compactMap {
+                self.container(named: $0.name, tool: tool)
+            }
+            if !containers.isEmpty {
+                return containers
+            }
         }
         return self.containers(for: tool)
+    }
+
+    public func activatedContainer(_ name: String, for tool: MBDependencyTool) -> MBContainer? {
+        for t in Self.syncContainerToolsMap[tool] ?? [tool] {
+            let containers = currentContainers(for: t)
+            if containers.isEmpty { continue }
+            guard let container = containers.first(where: { $0.isName(name) }) else {
+                return nil
+            }
+            if tool == t {
+                return container
+            }
+            if let container = self.container(named: name, tool: tool) {
+                return container
+            }
+        }
+        return self.container(named: name, tool: tool)
     }
 
     public func activatedContainerRepos(for tool: MBDependencyTool) -> [MBConfig.Repo] {
@@ -135,9 +208,7 @@ extension MBConfig.Feature {
     }
 
     public func isActivatedContainer(_ container: MBContainer) -> Bool {
-        let containers = self.currentContainers(for: container.tool)
-        if containers.isEmpty { return true }
-        return containers.contains(container)
+        return self.activatedContainer(container.name, for: container.tool) != nil
     }
 
     // MARK: - Container Files
@@ -156,10 +227,7 @@ extension MBConfig.Feature {
 
         let dir = Workspace.configDir.appending(pathComponent: MBConfig.Feature.ContainerBackupRoot).appending(pathComponent: name).appending(pathComponent: platformTool.name)
 
-        var containers = self.currentContainers(for: platformTool)
-        if containers.isEmpty {
-            containers = self.containers(for: platformTool)
-        }
+        let containers = self.activatedContainers(for: platformTool)
 
         if containers.isEmpty {
             return dir.appending(pathComponent: "NO_CONTAINER")

@@ -26,7 +26,6 @@ extension MBCommander.Container {
                 let currentFeature = self.config.currentFeature
                 currentFeature.activateContainer(container)
             }
-            self.config.save()
         }
     }
 }

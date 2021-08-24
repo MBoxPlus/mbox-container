@@ -37,7 +37,7 @@ extension MBCommander.Status {
         dynamic
         public func APIData(for container: MBContainer) -> [String: Any] {
             var dict = container.dictionary
-            dict["active"] = self.feature.isCurrentContainer(container)
+            dict["active"] = self.feature.isActivatedContainer(container)
             return dict
         }
     }
@@ -74,7 +74,7 @@ extension MBCommander.Status {
             return containerGroups.map { (repoName, containers) -> [String: Any] in
                 var dict = [String: Any]()
                 dict["name"] = repoName
-                dict["tools"] = containers.map { ["name": $0.tool.description, "active": self.feature.isCurrentContainer($0)] }
+                dict["tools"] = containers.map { ["name": $0.tool.description, "active": self.feature.isActivatedContainer($0)] }
                 return dict
             }
         }

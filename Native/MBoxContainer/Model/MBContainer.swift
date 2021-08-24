@@ -42,21 +42,6 @@ public class MBContainer: MBCodableObject {
         return self.name.lowercased() == name.lowercased()
     }
 
-    dynamic
-    public func description(feature: MBConfig.Feature) -> Row {
-        let row = Row()
-        if feature.isCurrentContainer(name: name, for: tool) {
-            row.selected = true
-            row.columns << name.ANSI(.yellow)
-            row.columns << tool.description.ANSI(.yellow)
-        } else {
-            row.columns << name
-            row.columns << tool.description
-        }
-
-        return row
-    }
-
     public override var description: String {
         return "Container `\(self.name)` (\(self.tool))"
     }

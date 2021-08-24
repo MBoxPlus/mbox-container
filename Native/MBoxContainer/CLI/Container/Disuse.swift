@@ -23,7 +23,6 @@ extension MBCommander.Container {
         open override func switchContainer(_ container: MBContainer) throws {
             UI.log(info: "Disuse container `\(container.name)` for \(container.tool)")
             self.config.currentFeature.deactivateContainer(container)
-            self.config.save()
             try super.switchContainer(container)
         }
     }

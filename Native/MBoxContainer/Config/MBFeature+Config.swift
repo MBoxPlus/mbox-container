@@ -22,16 +22,14 @@ extension MBConfig.Feature {
     public class var syncContainerTools: [[MBDependencyTool]] { return [] }
 
     public class var syncContainerToolsMap: [MBDependencyTool: [MBDependencyTool]] {
-        return associatedObject(base: self, key: &kMBConfigFeatureSyncContainerTools) {
-            var value = [MBDependencyTool: [MBDependencyTool]]()
-            let allTools = self.syncContainerTools
-            for tool in Set(allTools.flatMap { $0 }) {
-                var tools = allTools.filter { $0.contains(tool) }.flatMap { $0 }.withoutDuplicates()
-                tools.bringToFirst(tool)
-                value[tool] = tools
-            }
-            return value
+        var value = [MBDependencyTool: [MBDependencyTool]]()
+        let allTools = self.syncContainerTools
+        for tool in Set(allTools.flatMap { $0 }) {
+            var tools = allTools.filter { $0.contains(tool) }.flatMap { $0 }.withoutDuplicates()
+            tools.bringToFirst(tool)
+            value[tool] = tools
         }
+        return value
     }
 
     private func containerTools(for tool: MBDependencyTool) -> [MBDependencyTool] {

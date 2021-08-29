@@ -17,6 +17,15 @@ extension MBCommander.Container {
             return "List available containers in current feature"
         }
 
+        open override class var example: String? {
+            return """
+# List all containers in current feature:
+$ mbox container list
+List avaliable containers:
+    MBoxReposDemo  Bundler
+"""
+        }
+
         open override func setup() throws {
             try super.setup()
             UI.verbose = true

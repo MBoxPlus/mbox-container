@@ -36,7 +36,7 @@ public class MBContainer: MBCodableObject {
 
     public func isName(_ name: String) -> Bool {
         let name = String(name.split(separator: "/").first!)
-        if let repo = repo, repo.isName(name) {
+        if let repo = repo, repo.isName(name, searchPackageName: false) {
             return true
         }
         return self.name.lowercased() == name.lowercased()

@@ -1,4 +1,6 @@
-# MBox Contaienr
+# Contaienr for MBox
+
+Language: [简体中文](./README.zh-cn.md)
 
 ## Contributing
 Please reference the section [Contributing](https://github.com/MBoxPlus/mbox#contributing)

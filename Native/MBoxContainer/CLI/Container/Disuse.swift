@@ -14,6 +14,10 @@ import MBoxDependencyManager
 extension MBCommander.Container {
     open class Disuse: Switch {
 
+        open class override var description: String? {
+            return "Deactive container in current feature"
+        }
+
         dynamic
         open override func validate() throws {
             try super.validate()

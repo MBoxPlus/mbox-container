@@ -11,10 +11,10 @@ import MBoxCore
 import MBoxDependencyManager
 
 extension MBCommander {
-    open func validateMultipleContainers(for tool: MBDependencyTool) throws {
+    public func validateMultipleContainers(for tool: MBDependencyTool) throws {
         let containers = self.config.currentFeature.activatedContainers(for: tool)
         if containers.count > 1,
-           MBSetting.merged.container?.allowMultipleContainers(for: tool) != true {
+           MBSetting.merged.container?.isAllowMultipleContainers(for: tool) != true {
             var tips = ["There are multiple activated containers for \(tool):"]
             for container in containers {
                 tips.append("  - \(container.name)")

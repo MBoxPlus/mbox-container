@@ -16,9 +16,37 @@ extension MBSetting {
         @Codable
         public var allowMultipleContainers: [String]?
 
-        public func allowMultipleContainers(for tool: MBDependencyTool) -> Bool {
+        public func isAllowMultipleContainers(for tool: MBDependencyTool) -> Bool {
             guard let tools = self.allowMultipleContainers?.map({ $0.lowercased() }) else { return false }
             return tools.contains(tool.name.lowercased())
+        }
+
+        public func allowMultipleContainers(for tool: MBDependencyTool) {
+            if isAllowMultipleContainers(for: tool) { return }
+            var tools = self.allowMultipleContainers ?? []
+            tools.append(tool.name)
+            self.allowMultipleContainers = tools
+        }
+
+        public func allowMultipleContainers(for tools: [MBDependencyTool]) {
+            for tool in tools {
+                self.allowMultipleContainers(for: tool)
+            }
+        }
+
+        public func disallowMultipleContainers(for tool: MBDependencyTool) {
+            if !isAllowMultipleContainers(for: tool) { return }
+            var tools = self.allowMultipleContainers ?? []
+            tools.removeAll {
+                $0.lowercased() == tool.name.lowercased()
+            }
+            self.allowMultipleContainers = tools
+        }
+
+        public func disallowMultipleContainers(for tools: [MBDependencyTool]) {
+            for tool in tools {
+                self.disallowMultipleContainers(for: tool)
+            }
         }
     }
 

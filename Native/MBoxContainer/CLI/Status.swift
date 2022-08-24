@@ -8,10 +8,10 @@
 
 import MBoxCore
 import MBoxWorkspace
-import MBoxWorkspaceCore
 import MBoxDependencyManager
 
 extension MBCommander.Status {
+    public static let containerSectionName = "containers"
     open class Containers: MBCommanderStatus {
         public static var supportedAPI: [MBCommander.Status.APIType] {
             return [.api]
@@ -19,6 +19,10 @@ extension MBCommander.Status {
 
         public static var title: String {
             return "containers2"
+        }
+
+        public required init() {
+            fatalError()
         }
 
         public required init(feature: MBConfig.Feature) {
@@ -35,9 +39,12 @@ extension MBCommander.Status {
         }
 
         dynamic
-        public func APIData(for container: MBContainer) -> [String: Any] {
-            var dict = container.dictionary
-            dict["active"] = self.feature.isActivatedContainer(container)
+        public func APIData(for container: MBWorkRepo.Container) -> [String: Any] {
+            var dict: [String: Any] = container.dictionary
+            dict["active"] = self.feature.isActivated(container: container)
+            if let repoName = container.repo?.name {
+                dict["repo_name"] = repoName
+            }
             return dict
         }
     }
@@ -49,7 +56,11 @@ extension MBCommander.Status {
         }
 
         public static var title: String {
-            return "containers"
+            return Status.containerSectionName
+        }
+
+        public required init() {
+            fatalError()
         }
 
         public required init(feature: MBConfig.Feature) {
@@ -63,25 +74,26 @@ extension MBCommander.Status {
         }
         
         public func APIData() throws -> Any? {
-            var containerGroups = [String: [MBContainer]]()
+            var containerGroups = [String: [MBWorkRepo.Container]]()
             self.feature.allContainers.forEach { container in
-                if containerGroups[container.repoName] != nil {
-                    containerGroups[container.repoName]! << container
+                guard let repoName = container.repo?.name else { return }
+                if containerGroups[repoName] != nil {
+                    containerGroups[repoName]! << container
                 } else {
-                    containerGroups[container.repoName] = [container]
+                    containerGroups[repoName] = [container]
                 }
             }
             return containerGroups.map { (repoName, containers) -> [String: Any] in
                 var dict = [String: Any]()
                 dict["name"] = repoName
-                dict["tools"] = containers.map { ["name": $0.tool.description, "active": self.feature.isActivatedContainer($0)] }
+                dict["tools"] = containers.map { ["name": $0.tool.description, "active": self.feature.isActivated(container: $0)] }
                 return dict
             }
         }
     }
 
     @_dynamicReplacement(for: allSections)
-    public class var container_allSections: [MBCommanderStatus.Type] {
+    public class var container_allSections: [MBCommanderEnv.Type] {
         var result = self.allSections
         result << Containers.self
         result << DeprecatedContainers.self

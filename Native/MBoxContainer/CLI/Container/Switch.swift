@@ -8,7 +8,6 @@
 
 import Foundation
 import MBoxCore
-import MBoxWorkspaceCore
 import MBoxDependencyManager
 
 extension MBCommander.Container {
@@ -20,7 +19,7 @@ extension MBCommander.Container {
 
         open class override var arguments: [Argument] {
             var arguments = super.arguments
-            arguments << Argument("name", description: "Container Name", required: true)
+            arguments << Argument("name", description: "Container Name", required: true, plural: true)
             return arguments
         }
 
@@ -31,17 +30,27 @@ extension MBCommander.Container {
             return options
         }
 
-        open var name: String = ""
+        open override class var flags: [Flag] {
+            var flags = super.flags
+            flags << Flag("all", description: "Select All Containers")
+            return flags
+        }
+
+        open var names: [String] = []
         open var tools: [MBDependencyTool]?
+        open var allContainers: Bool = false
+
+        open var containers: [MBWorkRepo.Container] = []
 
         dynamic
         open override func setup() throws {
+            self.allContainers = self.shiftFlag("all")
             if let toolNames: [String] = self.shiftOptions("tool") {
                 self.tools = try toolNames.map { try MBDependencyTool.tool(for: $0) }
             }
             try super.setup()
-            self.name = try self.shiftArgument("name")
-            self.showStatusAtFinish = true
+            self.names = self.shiftArguments("name")
+            self.showStatusAtFinish = [Status.containerSectionName]
             self.requireSetupEnvironment = true
         }
 
@@ -49,19 +58,22 @@ extension MBCommander.Container {
         open override func validate() throws {
             let currentFeature = self.config.currentFeature
 
-            // check whether `name` is container repo
+            self.containers = currentFeature.allContainers
+            if !self.allContainers {
+                if self.names.isEmpty {
+                    throw ArgumentError.missingArgument("name")
+                }
+                self.containers = self.containers.filter { container in
+                    return self.names.contains { container.isName($0) }
+                }
+            }
+
             if let tools = self.tools {
-                for tool in tools{
-                    let container = currentFeature.container(named: name, tool: tool)
-                    if container == nil {
-                        throw UserError("`\(name)` is NOT a \(tool) container")
-                    }
-                }
-            } else {
-                let container = currentFeature.container(named: name)
-                if container.isEmpty {
-                    throw UserError("`\(name)` is NOT a container")
-                }
+                self.containers = self.containers.filter { tools.contains($0.tool) }
+            }
+
+            if self.containers.isEmpty {
+                throw UserError("Could not find the containers.")
             }
 
             try super.validate()
@@ -71,15 +83,7 @@ extension MBCommander.Container {
         open override func run() throws {
             try super.run()
 
-            let currentFeature = self.config.currentFeature
-
-            let tools = self.tools ?? MBDependencyTool.allTools
-            for tool in tools {
-                guard let container = currentFeature.container(named: self.name, tool: tool) else {
-                    UI.log(info: "No found container `\(self.name)` for \(tool)")
-                    continue
-                }
-                try self.switchContainer(container)
+            try self.switchContainers(self.containers)
 //                let platformRepos = currentFeature.containerRepos(platformTool:platformTool)
 //                let needClearWorkspaceEnv = (platformRepos.count > 1)
 //                if (needClearWorkspaceEnv) {
@@ -96,12 +100,11 @@ extension MBCommander.Container {
 //                if currentContainers.count > 1 {
 //                    UI.log(warn: "Platform `\(platformTool)` have multiple containers", summary: false)
 //                }
-            }
             self.config.save()
         }
 
         dynamic
-        open func switchContainer(_ container: MBContainer) throws {
+        open func switchContainers(_ containers: [MBWorkRepo.Container]) throws {
 
         }
 

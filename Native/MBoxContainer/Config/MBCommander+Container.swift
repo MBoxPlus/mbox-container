@@ -9,13 +9,20 @@
 import MBoxCore
 
 extension MBCommander {
-    @_dynamicReplacement(for:setupEventParams())
-    open func container_setupEventParams() -> [String: Any] {
+    @_dynamicReplacement(for: setupEventParams())
+    public func container_setupEventParams() -> [String: Any] {
         var eventParams = self.setupEventParams()
-        if let containers = UI.workspace?.config.currentFeature.activatedContainers {
-            eventParams["current_containers"] = containers.compactMap { container in
-                return container.toCodableObject()
+        if let containers = MBProcess.shared.workspace?.config.currentFeature.activatedContainers {
+            eventParams["current_containers"] = containers.compactMap {
+                [
+                    "name": $0.name,
+                    "path": $0.path,
+                    "tool": $0.tool
+                ]
             }
+            eventParams["current_container_urls"] = containers.compactMap({ container in
+                return container.repo?.gitURL?.toHTTPStyle()
+            }).joined(separator: ",")
         }
         return eventParams
     }

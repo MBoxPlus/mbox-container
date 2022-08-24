@@ -8,7 +8,6 @@
 
 import Foundation
 import MBoxCore
-import MBoxWorkspaceCore
 import MBoxDependencyManager
 
 extension MBCommander.Container {
@@ -21,14 +20,24 @@ extension MBCommander.Container {
         dynamic
         open override func validate() throws {
             try super.validate()
+
+            let dict = Dictionary(grouping: self.containers, by: \.tool)
+            for (tool, containers) in dict {
+                if containers.count <= 1 { continue }
+                if let config = MBSetting.merged.container,
+                   config.isAllowMultipleContainers(for: tool) {
+                    continue
+                }
+                throw UserError("[\(tool)] Could not activate containers \(containers.map{ "`\($0.name)`"}.joined(separator: "、")). Activate multi-containers for \(tool) is disallowed.")
+            }
         }
 
         dynamic
-        open override func switchContainer(_ container: MBContainer) throws {
-            try super.switchContainer(container)
-            UI.log(info: "Use container `\(container.name)` for \(container.tool)") {
+        open override func switchContainers(_ containers: [MBWorkRepo.Container]) throws {
+            try super.switchContainers(containers)
+            UI.log(info: "Use containers:") {
                 let currentFeature = self.config.currentFeature
-                currentFeature.activateContainer(container)
+                currentFeature.activateContainers(containers)
             }
         }
     }

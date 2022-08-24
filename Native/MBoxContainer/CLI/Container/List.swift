@@ -28,7 +28,7 @@ List avaliable containers:
 
         open override func setup() throws {
             try super.setup()
-            UI.verbose = true
+            MBProcess.shared.verbose = true
         }
 
         open override func run() throws {

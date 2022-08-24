@@ -12,9 +12,5 @@ REQUIRED: true
 FORWARD_DEPENDENCIES:
   MBoxWorkspace: 
 USER_VISIBLE: false
-NATIVE_DEPENDENCIES:
-  Loader:
-  - MBoxCore
-  - MBoxWorkspace/Loader
 AUTHORS:
 - MBox Team

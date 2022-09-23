@@ -27,9 +27,10 @@ extension MBCommander.Add {
             return
         }
         for (tool, containers) in Dictionary(grouping: workRepo.containers, by: \.tool) {
-            let activatedContainers = self.config.currentFeature.activatedContainers(for: tool)
             guard repo.activatedContainers(for: tool).isEmpty else { continue }
-            if MBSetting.merged.container?.isAllowMultipleContainers(for: tool) != true {
+            let activatedContainers = self.config.currentFeature.activatedContainers(for: tool)
+            if workRepo.setting.container?.isAllowMultipleContainers(for: tool) != true,
+                MBSetting.merged.container?.isAllowMultipleContainers(for: tool) != true {
                 if !activatedContainers.isEmpty {
                     continue
                 }
@@ -37,7 +38,8 @@ extension MBCommander.Add {
                     continue
                 }
             }
-            self.feature.activateContainers(containers)
+            let toActivatedContainers = workRepo.setting.container?.defaultActivateContainers(containers, for: tool) ?? containers
+            self.feature.activateContainers(toActivatedContainers)
         }
         self.config.save()
     }

@@ -102,6 +102,19 @@ extension MBConfig.Feature {
     }
 
     // MARK: Activate
+    private func shouldDeactivateContainer(for container: MBWorkRepo.Container?, tool: MBDependencyTool) -> [MBWorkRepo.Container] {
+        var result = [MBWorkRepo.Container]()
+        let allowMultiple = container?.repo.setting.container?.isAllowMultipleContainers(for: tool) == true || MBSetting.merged.container?.isAllowMultipleContainers(for: tool) == true
+        if !allowMultiple {
+            for container in self.activatedContainers(for: tool) {
+                if container.repo.setting.container?.isAllowMultipleContainers(for: tool) != true {
+                    result.append(container)
+                }
+            }
+        }
+        return result
+    }
+
     public func activateContainer(_ container: MBWorkRepo.Container) {
         self.activateContainers([container])
     }
@@ -109,12 +122,23 @@ extension MBConfig.Feature {
     public func activateContainers(_ containers: [MBWorkRepo.Container]) {
         let tools = containers.flatMap { containerTools(for: $0.tool) }.withoutDuplicates()
         let containers = containers.flatMap { self.containers(named: $0.name).filter { tools.contains($0.tool) } }.withoutDuplicates()
-        let disallowMultiContainerTools = tools.filter {
-            MBSetting.merged.container?.isAllowMultipleContainers(for: $0) != true
+
+        var deactivateContainers = [MBWorkRepo.Container]()
+        for tool in tools {
+            let activateContainers = containers.filter({ $0.tool == tool })
+            if activateContainers.isEmpty {
+                deactivateContainers.append(contentsOf: self.shouldDeactivateContainer(for: nil, tool: tool))
+            } else {
+                for container in activateContainers {
+                    deactivateContainers.append(contentsOf: self.shouldDeactivateContainer(for: container, tool: tool))
+                }
+            }
         }
-        var deactivatedContainers = disallowMultiContainerTools.flatMap { self.activatedContainers(for: $0) }
-        deactivatedContainers.removeAll(containers)
-        for container in deactivatedContainers {
+        deactivateContainers.removeDuplicates()
+        deactivateContainers.removeAll { containers.contains($0) }
+
+
+        for container in deactivateContainers {
             container.repoConfig.deactivateContainer(container.name, for: container.tool)
         }
         for container in containers {

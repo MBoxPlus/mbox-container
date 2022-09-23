@@ -48,6 +48,25 @@ extension MBSetting {
                 self.disallowMultipleContainers(for: tool)
             }
         }
+
+        // MARK: Repo Setting
+        @Codable
+        public var `default`: [MBConfig.Repo.Container]?
+
+        public func defaultActivateContainers(_ containers: [MBWorkRepo.Container],
+                                               for tool: MBDependencyTool) -> [MBWorkRepo.Container] {
+            guard let defaultActivate = self.default else {
+                return containers
+            }
+            guard let containersConfig = defaultActivate.first(where: { $0.tool == tool }) else {
+                return []
+            }
+            let defaultActivateNames = containersConfig.active.map { $0.lowercased() }
+            return containers.filter {
+                defaultActivateNames.contains($0.name.lowercased())
+            }
+        }
+
     }
 
     public var container: Container? {

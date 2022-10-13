@@ -1,5 +1,5 @@
 //
-//  MBContainer.swift
+//  MBWorkRepo.Container.swift
 //  MBoxContainer
 //
 //  Created by cppluwang on 2020/8/10.
@@ -7,22 +7,34 @@
 //
 
 import MBoxCore
-import MBoxWorkspaceCore
 import MBoxDependencyManager
 
+var kMBWorkRepoContainersKey: UInt8 = 0
 extension MBWorkRepo {
     dynamic
-    open func fetchContainers() -> [MBContainer] {
+    public func fetchContainers() -> [Container] {
         return []
     }
 
-    open var containers: [MBContainer] {
-        let value = self.fetchContainers()
-        for container in value {
-            container.feature = self.model.feature
-            container.repo = self.model
+    public var containers: [Container] {
+        return associatedObject(base: self, key: &kMBWorkRepoContainersKey) {
+            return self.fetchContainers()
         }
-        return value
     }
 
+    func resetContainerCache() {
+        resetAssociatedObject(base: self, key: &kMBWorkRepoContainersKey)
+    }
+
+    public func containers(for tool: MBDependencyTool) -> [Container] {
+        return self.containers.filter {
+            $0.tool == tool
+        }
+    }
+
+    public func container(named: String, for tool: MBDependencyTool) -> Container? {
+        return self.containers.first {
+            $0.tool == tool && $0.isName(named)
+        }
+    }
 }

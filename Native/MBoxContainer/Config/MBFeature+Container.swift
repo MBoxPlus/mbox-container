@@ -7,90 +7,28 @@
 //
 
 import MBoxCore
-import MBoxWorkspaceCore
 import MBoxDependencyManager
 
 extension MBConfig.Feature {
 
-    // MARK: - Current Container
-    public var currentContainers: [MBContainer] {
-        set {
-            self.dictionary["current_containers"] = newValue
-        }
-        get {
-            let v: [MBContainer] = self.value(forPath: "current_containers")
-            v.forEach {
-                $0.feature = self
-            }
-            return v
-        }
-    }
-
-    public func currentContainers(for tool: MBDependencyTool) -> [MBContainer] {
-        return currentContainers.filter {
-            $0.tool == tool
-        }
-    }
-
-    public func currentContainer(named: String) -> MBContainer? {
-        return self.currentContainers.first { $0.isName(named) }
-    }
-
-    public func isCurrentContainer(_ container: MBContainer) -> Bool {
-        return self.currentContainers.contains(container)
-    }
-
-    public func isCurrentContainer(name: String, for tool: MBDependencyTool? = nil) -> Bool {
-        return currentContainers.contains { (container) -> Bool in
-            if let tool = tool, container.tool != tool {
-                return false
-            }
-            return container.isName(name)
-        }
-    }
-
-    public var currentContainerRepos: [MBConfig.Repo] {
-        return self.currentContainers.compactMap(\.repo).withoutDuplicates()
-    }
-
-    public func currentContainerRepos(for tool: MBDependencyTool) -> [MBConfig.Repo] {
-        return currentContainers(for: tool).compactMap(\.repo).withoutDuplicates()
-    }
-
-    // MARK: - All Containers
-    public func containers(for tool: MBDependencyTool) -> [MBContainer] {
-        return self.allContainers.filter {
-            $0.tool == tool
-        }
-    }
-
-    public func container(for tool: MBDependencyTool) -> MBContainer? {
-        let value = self.currentContainers(for: tool)
-        if value.count > 0 {
-            return value.first!
-        }
-        return self.containers(for: tool).first
-    }
-
-    public func container(named: String, tool: MBDependencyTool? = nil) -> MBContainer? {
-        let all: [MBContainer]
-        if let tool = tool {
-            all = self.containers(for: tool)
-        } else {
-            all = self.allContainers
-        }
-        return all.first { $0.isName(named) }
-    }
-
-    public func containerRepos(for tool: MBDependencyTool) -> [MBConfig.Repo] {
-        return containers(for: tool).compactMap(\.repo).withoutDuplicates()
-    }
-
     dynamic
-    public var allContainers: [MBContainer] {
-        return repos.compactMap { $0.containers }.flatMap { $0 }.then {
-            $0.feature = self
+    public func description(for containers: [MBWorkRepo.Container]) -> Row {
+        let row = Row()
+        var toolString = [String]()
+        for container in containers {
+            if self.isActivated(container: container) {
+                row.selected = true
+                toolString.append(container.tool.name.ANSI(.yellow))
+            } else {
+                toolString.append(container.tool.name)
+            }
         }
+        var name = containers.first!.name
+        if row.selected {
+            name = name.ANSI(.yellow)
+        }
+        row.columns = [name, toolString.joined(separator: " + ")]
+        return row
     }
 
     public var allContainerDescriptions: [Row] {
@@ -99,8 +37,27 @@ extension MBConfig.Feature {
             return [Row(column: "It is empty!")]
         }
         var list = [Row]()
-        containers.forEach { container in
-            list.append(container.description(feature: self))
+        let syncTools = Self.syncContainerToolsMap.values
+
+        for repo in self.workRepos {
+            for (_, var containers) in Dictionary(grouping: repo.containers, by: \.name).sorted(by: \.key) {
+                for tools in syncTools {
+                    var syncContainers = [MBWorkRepo.Container]()
+                    for tool in tools.sorted() {
+                        if let container = containers.removeFirst(where: { $0.tool == tool
+                        }) {
+                            syncContainers.append(container)
+                        }
+                    }
+                    if syncContainers.isEmpty {
+                        continue
+                    }
+                    list.append(description(for: syncContainers))
+                }
+                for container in containers {
+                    list.append(description(for: [container]))
+                }
+            }
         }
 
         list.sort(by: { (a, b) -> Bool in
@@ -109,45 +66,14 @@ extension MBConfig.Feature {
         return list
     }
 
-    // MARK: - Activated Container
-    public var activatedContainers: [MBContainer] {
-        let containers = currentContainers
-        if !containers.isEmpty {
-            return containers
-        }
-        return self.allContainers
-    }
-
-    public var activatedContainerRepos: [MBConfig.Repo] {
-        return activatedContainers.compactMap(\.repo).withoutDuplicates()
-    }
-
-    public func activatedContainers(for tool: MBDependencyTool) -> [MBContainer] {
-        let containers = currentContainers(for: tool)
-        if !containers.isEmpty {
-            return containers
-        }
-        return self.containers(for: tool)
-    }
-
-    public func activatedContainerRepos(for tool: MBDependencyTool) -> [MBConfig.Repo] {
-        return activatedContainers(for: tool).compactMap(\.repo).withoutDuplicates()
-    }
-
-    public func isActivatedContainer(_ container: MBContainer) -> Bool {
-        let containers = self.currentContainers(for: container.tool)
-        if containers.isEmpty { return true }
-        return containers.contains(container)
-    }
-
     // MARK: - Container Files
     dynamic
-    open func allContainerFiles(platformTool: MBDependencyTool) -> [String] {
+    public func allContainerFiles(platformTool: MBDependencyTool) -> [String] {
         return []
     }
 
     dynamic
-    open func clearWorkspaceEnv(platformTool: MBDependencyTool) throws {
+    public func clearWorkspaceEnv(platformTool: MBDependencyTool) throws {
     }
 
     static let ContainerBackupRoot = "containers"
@@ -156,18 +82,15 @@ extension MBConfig.Feature {
 
         let dir = Workspace.configDir.appending(pathComponent: MBConfig.Feature.ContainerBackupRoot).appending(pathComponent: name).appending(pathComponent: platformTool.name)
 
-        var containers = self.currentContainers(for: platformTool)
-        if containers.isEmpty {
-            containers = self.containers(for: platformTool)
-        }
+        let containers = self.activatedContainers(for: platformTool)
 
         if containers.isEmpty {
             return dir.appending(pathComponent: "NO_CONTAINER")
         }
-        return dir.appending(pathComponent: containers.map { "\($0.repoName)-\($0.name)" }.joined(separator: "|"))
+        return dir.appending(pathComponent: containers.map { "\($0.repo!.name)-\($0.name)" }.joined(separator: "|"))
     }
     
-    open func backupContainerFiles(tool: MBDependencyTool) throws {
+    public func backupContainerFiles(tool: MBDependencyTool) throws {
         let containerFiles = allContainerFiles(platformTool: tool)
         if containerFiles.isEmpty {
             return
@@ -188,7 +111,7 @@ extension MBConfig.Feature {
         }
     }
     
-    open func restoreContainerFiles(tool: MBDependencyTool) throws {
+    public func restoreContainerFiles(tool: MBDependencyTool) throws {
         let containerFiles = allContainerFiles(platformTool: tool)
         if containerFiles.isEmpty {
             return

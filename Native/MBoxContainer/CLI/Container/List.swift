@@ -17,9 +17,18 @@ extension MBCommander.Container {
             return "List available containers in current feature"
         }
 
+        open override class var example: String? {
+            return """
+# List all containers in current feature:
+$ mbox container list
+List avaliable containers:
+    MBoxReposDemo  Bundler
+"""
+        }
+
         open override func setup() throws {
             try super.setup()
-            UI.verbose = true
+            MBProcess.shared.verbose = true
         }
 
         open override func run() throws {
@@ -38,8 +47,8 @@ extension MBCommander.Container {
             }
 
             MBDependencyTool.allTools.forEach { (platformTool) in
-                let currentContainers = currentFeature.currentContainers(for: platformTool)
-                if currentContainers.count > 1 {
+                let activatedContainers = currentFeature.activatedContainers(for: platformTool)
+                if activatedContainers.count > 1 {
                     UI.log(warn: "Platform `\(platformTool)` have multiple containers", summary: false)
                 }
             }

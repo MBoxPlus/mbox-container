@@ -2,41 +2,39 @@ module MBox
   class Config
     class Feature
 
-      def container_repos
-        container_names = JSON.parse(ENV['MBOX_COCOAPODS_CONTAINER_REPOS']) || []
-        repos.select do |repo|
+      class Container
+        attr_accessor :tool
+        attr_accessor :repo_name
+        attr_accessor :name
+        def initialize(name, repo_name, tool)
+          self.name = name
+          self.repo_name = repo_name
+          self.tool = tool
+        end
+      end
+
+      def all_containers
+        @all_containers ||= begin
+          self.repos.flat_map { |repo| repo.all_containers }
+        end
+      end
+
+      def current_containers_for(tool)
+        self.repos.flat_map { |repo|
+          repo.activated_containers_for(tool)
+        }
+      end
+
+      def current_container_repos_for(tool)
+        repo_names = if env = ENV["MBOX_#{tool.upcase}_CURRENT_CONTAINER_REPOS"]
+          env.split(",")
+        else
+          self.current_containers_for(tool).map(&:repo_name)
+        end
+        self.repos.select do |repo|
           next unless repo.name
-          container_names.include?(repo.name)
+          repo_names.include?(repo.name)
         end
-      end
-
-      def container_repo_with_name(name, raise_error: true)
-        repo = container_repos.find {|rp| rp.name == name}
-        if raise_error && (repo.nil? || !repo.path.exist?)
-          raise ::Pod::Informative, "Could not find container repo `#{name}`"
-        end
-        repo
-      end
-
-      def current_container_repos(raise_error: true)
-        current_container_names.map do |name|
-          container_repo_with_name(name, raise_error:raise_error)
-        end.compact
-      end
-
-      # 当前选择的容器仓库
-      def current_container_names
-        @current_container_names ||= begin
-          json = ENV['MBOX_COCOAPODS_CURRENT_CONTAINERS']
-          return [] if json.nil?
-          JSON.parse(json) || []
-        rescue Exception => e
-          []
-        end
-      end
-
-      def current_container_hash
-        # TODO
       end
 
     end

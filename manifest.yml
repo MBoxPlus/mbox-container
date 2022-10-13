@@ -2,18 +2,15 @@
 CLI: true
 DEPENDENCIES:
 - MBoxCore
-- MBoxWorkspace
 - MBoxGit
 - MBoxDependencyManager
 NAME: MBoxContainer
 VERSION: '1.0'
 MINIMUM_VERSION: 4.8.0
 RUBY: true
-REQUIRED_FOR_WORKSPACE: true
+REQUIRED: true
+FORWARD_DEPENDENCIES:
+  MBoxWorkspace: 
 USER_VISIBLE: false
-NATIVE_DEPENDENCIES:
-  Loader:
-  - MBoxCore
-  - MBoxWorkspace/Loader
 AUTHORS:
 - MBox Team

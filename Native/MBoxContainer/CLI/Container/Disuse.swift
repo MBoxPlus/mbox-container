@@ -8,11 +8,14 @@
 
 import Foundation
 import MBoxCore
-import MBoxWorkspaceCore
 import MBoxDependencyManager
 
 extension MBCommander.Container {
     open class Disuse: Switch {
+
+        open class override var description: String? {
+            return "Deactive container in current feature"
+        }
 
         dynamic
         open override func validate() throws {
@@ -20,11 +23,13 @@ extension MBCommander.Container {
         }
 
         dynamic
-        open override func switchContainer(_ container: MBContainer) throws {
-            UI.log(info: "Disuse container `\(container.name)` for \(container.tool)")
-            self.config.currentFeature.deactivateContainer(container)
-            self.config.save()
-            try super.switchContainer(container)
+        open override func switchContainers(_ containers: [MBWorkRepo.Container]) throws {
+            UI.log(info: "Disuse containers:") {
+                for container in containers {
+                    self.config.currentFeature.deactivateContainer(container)
+                }
+            }
+            try super.switchContainers(containers)
         }
     }
 }
